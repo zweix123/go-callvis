@@ -5,10 +5,6 @@ import (
 	"fmt"
 	"go/build"
 	"go/types"
-	"golang.org/x/tools/go/callgraph"
-	"golang.org/x/tools/go/callgraph/cha"
-	"golang.org/x/tools/go/callgraph/rta"
-	"golang.org/x/tools/go/callgraph/static"
 	"io"
 	"log"
 	"net/http"
@@ -16,6 +12,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"golang.org/x/tools/go/callgraph"
+	"golang.org/x/tools/go/callgraph/cha"
+	"golang.org/x/tools/go/callgraph/rta"
+	"golang.org/x/tools/go/callgraph/static"
 	"golang.org/x/tools/go/packages"
 	"golang.org/x/tools/go/pointer"
 	"golang.org/x/tools/go/ssa"
@@ -26,12 +26,12 @@ type CallGraphType string
 
 const (
 	CallGraphTypeStatic  CallGraphType = "static"
-	CallGraphTypeCha                   = "cha"
-	CallGraphTypeRta                   = "rta"
-	CallGraphTypePointer               = "pointer"
+	CallGraphTypeCha     CallGraphType = "cha"
+	CallGraphTypeRta     CallGraphType = "rta"
+	CallGraphTypePointer CallGraphType = "pointer"
 )
 
-//==[ type def/func: analysis   ]===============================================
+// ==[ type def/func: analysis   ]===============================================
 type renderOpts struct {
 	cacheDir string
 	focus    string
@@ -60,7 +60,7 @@ func mainPackages(pkgs []*ssa.Package) ([]*ssa.Package, error) {
 	return mains, nil
 }
 
-//==[ type def/func: analysis   ]===============================================
+// ==[ type def/func: analysis   ]===============================================
 type analysis struct {
 	opts      *renderOpts
 	prog      *ssa.Program
@@ -78,7 +78,7 @@ func (a *analysis) DoAnalysis(
 	args []string,
 ) error {
 	cfg := &packages.Config{
-		Mode:       packages.LoadAllSyntax,
+		Mode:       packages.NeedName | packages.NeedFiles | packages.NeedCompiledGoFiles | packages.NeedImports | packages.NeedDeps | packages.NeedTypes | packages.NeedSyntax | packages.NeedTypesInfo | packages.NeedTypesSizes,
 		Tests:      tests,
 		Dir:        dir,
 		BuildFlags: getBuildFlags(),
@@ -135,7 +135,7 @@ func (a *analysis) DoAnalysis(
 		return fmt.Errorf("invalid call graph type: %s", a.opts.algo)
 	}
 
-	//cg.DeleteSyntheticNodes()
+	// cg.DeleteSyntheticNodes()
 
 	a.prog = prog
 	a.pkgs = pkgs
@@ -231,7 +231,6 @@ func (a *analysis) OverrideByHTTP(r *http.Request) {
 	if inc := r.FormValue("include"); inc != "" {
 		a.opts.include[0] = inc
 	}
-	return
 }
 
 // basically do printOutput() with previously checking
@@ -244,7 +243,8 @@ func (a *analysis) Render() ([]byte, error) {
 	)
 
 	if a.opts.focus != "" {
-		if ssaPkg = a.prog.ImportedPackage(a.opts.focus); ssaPkg == nil {
+		ssaPkg = a.prog.ImportedPackage(a.opts.focus)
+		if ssaPkg == nil {
 			if strings.Contains(a.opts.focus, "/") {
 				return nil, fmt.Errorf("focus failed: %v", err)
 			}
@@ -264,7 +264,8 @@ func (a *analysis) Render() ([]byte, error) {
 				return nil, fmt.Errorf("focus failed, found multiple packages with name: %v", a.opts.focus)
 			}
 			// found single package
-			if ssaPkg = a.prog.ImportedPackage(foundPaths[0]); ssaPkg == nil {
+			ssaPkg = a.prog.ImportedPackage(foundPaths[0])
+			if ssaPkg == nil {
 				return nil, fmt.Errorf("focus failed: %v", err)
 			}
 		}
@@ -352,7 +353,6 @@ func pathExists(path string) (bool, error) {
 
 func copyFile(src, dst string) (int64, error) {
 	sourceFileStat, err := os.Stat(src)
-
 	if err != nil {
 		return 0, err
 	}

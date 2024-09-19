@@ -1,12 +1,10 @@
 // go-callvis: a tool to help visualize the call graph of a Go program.
-//
 package main
 
 import (
 	"flag"
 	"fmt"
 	"go/build"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -45,9 +43,9 @@ var (
 	outputFile    = flag.String("file", "", "output filename - omit to use server mode")
 	outputFormat  = flag.String("format", "svg", "output file format [svg | png | jpg | ...]")
 	cacheDir      = flag.String("cacheDir", "", "Enable caching to avoid unnecessary re-rendering, you can force rendering by adding 'refresh=true' to the URL query or emptying the cache directory")
-	callgraphAlgo = flag.String("algo", CallGraphTypePointer, fmt.Sprintf("The algorithm used to construct the call graph. Possible values inlcude: %q, %q, %q, %q",
-		CallGraphTypeStatic, CallGraphTypeCha, CallGraphTypeRta, CallGraphTypePointer))
-
+	callgraphAlgo = flag.String("algo", string(CallGraphTypePointer),
+		fmt.Sprintf("The algorithm used to construct the call graph. Possible values inlcude: %q, %q, %q, %q",
+			CallGraphTypeStatic, CallGraphTypeCha, CallGraphTypeRta, CallGraphTypePointer))
 	debugFlag   = flag.Bool("debug", false, "Enable verbose log.")
 	versionFlag = flag.Bool("version", false, "Show version and exit.")
 )
@@ -105,7 +103,7 @@ func outputDot(fname string, outputFormat string) {
 
 	log.Println("writing dot output..")
 
-	writeErr := ioutil.WriteFile(fmt.Sprintf("%s.gv", fname), output, 0755)
+	writeErr := os.WriteFile(fmt.Sprintf("%s.gv", fname), output, 0o755)
 	if writeErr != nil {
 		log.Fatalf("%v\n", writeErr)
 	}
@@ -118,7 +116,7 @@ func outputDot(fname string, outputFormat string) {
 	}
 }
 
-//noinspection GoUnhandledErrorResult
+// noinspection GoUnhandledErrorResult
 func main() {
 	flag.Parse()
 
@@ -151,7 +149,14 @@ func main() {
 	if *outputFile == "" {
 		*outputFile = "output"
 		if !*skipBrowser {
-			go openBrowser(urlAddr)
+			go func() { // nolint
+				defer func() {
+					if r := recover(); r != nil {
+						log.Printf("打开浏览器时发生错误: %v", r)
+					}
+				}()
+				openBrowser(urlAddr)
+			}()
 		}
 
 		log.Printf("http serving at %s", urlAddr)

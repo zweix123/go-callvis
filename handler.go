@@ -23,8 +23,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	// .. and allow overriding by HTTP params
 	Analysis.OverrideByHTTP(r)
 
-	var img string
-	if img = Analysis.FindCachedImg(); img != "" {
+	img := Analysis.FindCachedImg()
+	if img != "" {
 		log.Println("serving file:", img)
 		http.ServeFile(w, r, img)
 		return
@@ -65,4 +65,3 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	log.Println("serving file:", img)
 	http.ServeFile(w, r, img)
 }
-

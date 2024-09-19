@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ofabry/go-callvis/examples/main/mypkg"
+	pkg "github.com/zweix123/go-callvis/examples/main/pkg"
 )
 
 func main() {
@@ -12,17 +12,17 @@ func main() {
 }
 
 func funcs() {
-	mypkg.Exported()
+	pkg.Exported()
 }
 
 type calls struct{}
 
 func (calls) execution() {
-	mypkg.Regular()
+	pkg.Regular()
 }
 
 func (calls) invocation() {
-	mypkg.T.Static()
-	var i mypkg.Iface = mypkg.T
+	pkg.T.Static()
+	var i pkg.Iface = pkg.T
 	i.Dynamic()
 }

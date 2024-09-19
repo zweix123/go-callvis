@@ -71,7 +71,7 @@ func printOutput(
 	logf("%d include prefixes: %v", len(includePaths), includePaths)
 	logf("no std packages: %v", nostd)
 
-	var isFocused = func(edge *callgraph.Edge) bool {
+	isFocused := func(edge *callgraph.Edge) bool {
 		caller := edge.Caller
 		callee := edge.Callee
 		if focusPkg != nil && (caller.Func.Pkg.Pkg.Path() == focusPkg.Path() || callee.Func.Pkg.Pkg.Path() == focusPkg.Path()) {
@@ -100,7 +100,7 @@ func printOutput(
 		return false
 	}
 
-	var inIncludes = func(node *callgraph.Node) bool {
+	inIncludes := func(node *callgraph.Node) bool {
 		pkgPath := node.Func.Pkg.Pkg.Path()
 		for _, p := range includePaths {
 			if strings.HasPrefix(pkgPath, p) {
@@ -110,7 +110,7 @@ func printOutput(
 		return false
 	}
 
-	var inLimits = func(node *callgraph.Node) bool {
+	inLimits := func(node *callgraph.Node) bool {
 		pkgPath := node.Func.Pkg.Pkg.Path()
 		for _, p := range limitPaths {
 			if strings.HasPrefix(pkgPath, p) {
@@ -120,7 +120,7 @@ func printOutput(
 		return false
 	}
 
-	var inIgnores = func(node *callgraph.Node) bool {
+	inIgnores := func(node *callgraph.Node) bool {
 		pkgPath := node.Func.Pkg.Pkg.Path()
 		for _, p := range ignorePaths {
 			if strings.HasPrefix(pkgPath, p) {
@@ -130,8 +130,8 @@ func printOutput(
 		return false
 	}
 
-	var isInter = func(edge *callgraph.Edge) bool {
-		//caller := edge.Caller
+	isInter := func(edge *callgraph.Edge) bool {
+		// caller := edge.Caller
 		callee := edge.Callee
 		if callee.Func.Object() != nil && !callee.Func.Object().Exported() {
 			return true
@@ -149,7 +149,7 @@ func printOutput(
 		posCaller := prog.Fset.Position(caller.Func.Pos())
 		posCallee := prog.Fset.Position(callee.Func.Pos())
 		posEdge := prog.Fset.Position(edge.Pos())
-		//fileCaller := fmt.Sprintf("%s:%d", posCaller.Filename, posCaller.Line)
+		// fileCaller := fmt.Sprintf("%s:%d", posCaller.Filename, posCaller.Line)
 		filenameCaller := filepath.Base(posCaller.Filename)
 
 		// omit synthetic calls
@@ -201,12 +201,12 @@ func printOutput(
 			}
 		}
 
-		//var buf bytes.Buffer
-		//data, _ := json.MarshalIndent(caller.Func, "", " ")
-		//logf("call node: %s -> %s\n %v", caller, callee, string(data))
+		// var buf bytes.Buffer
+		// data, _ := json.MarshalIndent(caller.Func, "", " ")
+		// logf("call node: %s -> %s\n %v", caller, callee, string(data))
 		logf("call node: %s -> %s (%s -> %s) %v\n", caller.Func.Pkg, callee.Func.Pkg, caller, callee, filenameCaller)
 
-		var sprintNode = func(node *callgraph.Node, isCaller bool) *dotNode {
+		sprintNode := func(node *callgraph.Node, isCaller bool) *dotNode {
 			// only once
 			key := node.Func.String()
 			nodeTooltip := ""
