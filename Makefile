@@ -8,6 +8,7 @@ BUILD_HOST ?= $(shell hostname)
 BUILD_USER ?= $(shell id -un)
 
 PROJECT := go-callvis
+PROJECT_MODERN := go-callvis-modern
 BUILD_DIR ?= .build
 
 GOOS ?= $(shell go env GOOS)
@@ -38,7 +39,10 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 build:  ## Build go-callvis
-	go build -tags $(GO_BUILD_TAGS) -ldflags "$(GO_LDFLAGS)" $(GO_BUILD_ARGS)
+	go build -tags $(GO_BUILD_TAGS) -ldflags "$(GO_LDFLAGS)" $(GO_BUILD_ARGS) ./cmd/${PROJECT}
+
+build-modern:  ## Build go-callvis-modern
+	go build -tags $(GO_BUILD_TAGS) -ldflags "$(GO_LDFLAGS)" $(GO_BUILD_ARGS) ./cmd/${PROJECT_MODERN}
 
 test:  ## Run unit tests
 	go test -tags $(GO_BUILD_TAGS) -ldflags "$(GO_LDFLAGS)" $(GO_BUILD_ARGS) -short -race ./...

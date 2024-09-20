@@ -28,4 +28,5 @@ _testmain.go
 
 # Builds
 /.build/
-go-callvis
+/go-callvis
+/go-callvis-modern
