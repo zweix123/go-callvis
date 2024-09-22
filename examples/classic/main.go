@@ -1,7 +1,7 @@
 package main
 
 import (
-	pkg "github.com/zweix123/go-callvis/examples/main/pkg"
+	pkg "github.com/zweix123/go-callvis/examples/classic/pkg"
 )
 
 func main() {

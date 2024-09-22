@@ -9,7 +9,7 @@ import (
 var l = log.New(os.Stderr, "mypkg", 0)
 
 func init() {
-	go func() {
+	go func() { // nolint
 		l.Fatal(http.ListenAndServe(":8080", nil))
 	}()
 }
@@ -36,7 +36,7 @@ func (t *myType) Dynamic() {}
 
 func Regular() {
 	defer deferred()
-	go concurrent()
+	go concurrent() // nolint
 }
 func deferred()   {}
 func concurrent() {}
