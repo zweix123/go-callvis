@@ -12,7 +12,7 @@ import (
 )
 
 func (g *GoCallvisModern) analysis() error {
-	switch g.algo {
+	switch g.Algo {
 	case Static:
 		g.callgraph = static.CallGraph(g.program)
 	case Cha:
@@ -22,7 +22,11 @@ func (g *GoCallvisModern) analysis() error {
 		if err != nil {
 			return fmt.Errorf("getMainFunction: %w", err)
 		}
-		g.callgraph = rta.Analyze(mainFuncs, true).CallGraph //? parameter meaning?
+		result := rta.Analyze(mainFuncs, true) //? parameter meaning?
+		if result == nil {
+			return fmt.Errorf("rta.Analyze returned nil, possibly due to the absence of a main function")
+		}
+		g.callgraph = result.CallGraph
 	case Pointer:
 		config := &pointer.Config{
 			Mains:          g.mains,
@@ -34,7 +38,7 @@ func (g *GoCallvisModern) analysis() error {
 		}
 		g.callgraph = result.CallGraph
 	default:
-		return fmt.Errorf("unknown analysis algorithm: %s", g.algo)
+		return fmt.Errorf("unknown analysis algorithm: %s", g.Algo)
 	}
 	return nil
 }

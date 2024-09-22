@@ -1,19 +1,22 @@
 package go_callvis_modern
 
 import (
+	"fmt"
+	"strings"
 	"sync"
 
+	"github.com/zweix123/go-callvis/pkg/log"
 	"golang.org/x/tools/go/callgraph"
 	"golang.org/x/tools/go/ssa"
 )
 
 type GoCallvisModern struct {
-	algo Algorithm
+	Algo Algorithm
 
 	// packages load config
-	dir                  string // analysis dir
-	includeTest          bool   // analysis include test file
-	packagesLoadPatterns []string
+	Dir                  string   // analysis dir
+	IncludeTest          bool     // analysis include test file
+	PackagesLoadPatterns []string //! unused
 
 	// analysis result
 	program   *ssa.Program
@@ -39,25 +42,38 @@ func GetInstance() *GoCallvisModern {
 }
 
 func (g *GoCallvisModern) Process() error {
+	log.Log("start process")
 	// 1. parser: golang source code -> ast -> ssa
 	err := g.parse()
 	if err != nil {
-		return err
+		return fmt.Errorf("parse error: %w", err)
 	}
+	log.Log("parse success")
 	// 2. analyst: ssa -> callgraph
 	err = g.analysis()
 	if err != nil {
-		return err
+		return fmt.Errorf("analysis error: %w", err)
 	}
+	log.Log("analysis success")
 	// 3. structured: callgraph -> internal representation
 	err = g.structure()
 	if err != nil {
-		return err
+		return fmt.Errorf("structure error: %w", err)
 	}
+	log.Log("structure success")
 	// 4. dot: internal representation -> dot
 	err = g.dot()
 	if err != nil {
-		return err
+		return fmt.Errorf("dot error: %w", err)
 	}
+	log.Log("dot success")
 	return nil
+}
+
+func (g *GoCallvisModern) Argument() string {
+	return strings.Join([]string{
+		"algo: " + string(g.Algo),
+		"dir: " + fmt.Sprintf("%#v", g.Dir),
+		"test: " + fmt.Sprintf("%t", g.IncludeTest),
+	}, "; ")
 }
